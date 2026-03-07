@@ -150,6 +150,7 @@ Each barcode type is defined by a JSON configuration object with the following s
   - `input: true` - User must select an option
   - `options: array` - Array of option objects
   - `default: string` - (optional) Default option value
+  - If no default is set, the first option is used
   - Example:
     ```json
     {
@@ -342,3 +343,52 @@ Each barcode type is defined by a JSON configuration object with the following s
 - Import/export favorites as JSON
 - Dark mode theme
 - Advanced QR code options (custom logos, colors)
+
+---
+
+## Implementation Status & Notes for Next LLM
+
+### What Has Been Implemented (as of March 2026)
+
+All phases 1–6 and most of phases 7–8 are complete. The app is a single-file Web Component architecture:
+
+**Files:**
+- `barcode-generator.js` — Self-contained Web Component with Shadow DOM. Contains all logic: i18n translations, barcode configs, checksum algorithms, pattern parser, fill logic, validation, rendering, favorites, export, share, and event handling. ~1500 lines.
+- `index.html` — Minimal host page with PWA tags, loads JsBarcode + the component, registers service worker.
+- `sw.js` — Cache-first service worker with versioned cache (`barcode-gen-v1`).
+- `manifest.json` — PWA manifest with SVG icons.
+- `lib/JsBarcode.all.min.js` — JsBarcode v3.11.6, locally bundled.
+- `icons/icon-192.svg`, `icons/icon-512.svg` — SVG PWA icons (barcode motif).
+
+**Barcode Templates (4 configs in `BARCODE_CONFIGS`):**
+1. `HitDisplayGeneric-Shooter` — Pattern `1LNNNNNNCC` (prefix 1, legalization dropdown, 6-digit license number, mod97weighted checksum)
+2. `HitDisplayGeneric-Programm` — Pattern `2LEEEPPPCC` (prefix 2, legalization dropdown, 3-digit billing program, 3-digit display program, mod97weighted checksum)
+3. `HitDisplaySintro-CodeSelect` — Pattern `NNNN` (Sintro code from dropdown, left-padded with 0)
+4. `HitDisplaySintro-CodeText` — Pattern `NNNN` (free-form Sintro code text input, left-padded with 0)
+
+**Architecture decisions & key details:**
+- The component loads JsBarcode either from the host page global or falls back to loading from CDN via `ensureJsBarcode()`.
+- `_loadFromURL()` parses `?config=<id>&v[0]=val0&v[1]=val1` on page load to restore state from a shared URL. Each input segment gets an indexed `v[N]` query parameter.
+- **Resolution strategy:** JsBarcode renders at 2x resolution (e.g., `width: 4, height: 200` in barcodeOptions). After rendering, the canvas CSS dimensions are set to half the pixel dimensions (`canvas.style.width/height = canvas.width/height / 2 + 'px'`). This gives a crisp display and high-res export from the same canvas. Download and copy use the canvas directly (no separate hi-res canvas needed).
+- The template selector `<select>` is always visible. The template title is NOT shown separately — only the description is displayed below the selector.
+- Segment configs support a `label` property (localized object) for custom input field labels. Falls back to type name if omitted.
+- Option segments default to the first option value (no `default` property needed).
+- Favorites store `configIndex` (integer). If configs are reordered or removed, old favorites may point to wrong templates. Consider migrating to `configId` string in the future.
+- Action buttons (Favorite, Download, Copy, Share) all use the same `.btn` class with consistent styling — icon + text label, uniform sizing.
+- `resolveSource()` iterates all parsed segments and matches them against the source pattern. It skips segments not in the source, so the source can reference a subset of the pattern (e.g., source `######` in pattern `D######CC` correctly picks up only the # segment).
+- The `mod97weighted` checksum algorithm only handles numeric source values. Make sure the `source` property in checksum segments only references segments that resolve to digits.
+
+**Checksum algorithm (`mod97weighted`):**
+- Formula: `(source * -3) mod 97` where source is the full numeric string parsed as an integer
+- JavaScript implementation uses `(((num * -3) % 97) + 97) % 97` to ensure non-negative results
+- Only works with numeric source values. Non-digit characters cause the algorithm to return `null` (no barcode shown).
+
+**Things NOT yet done / known gaps:**
+- No automated tests
+- Service worker cache version (`barcode-gen-v1`) needs manual bumping on updates
+- No "last used config" restoration from localStorage (preference is saved but input values are not persisted across sessions unless saved as a favorite)
+- Accessibility: basic ARIA attributes exist but no comprehensive a11y audit done
+- PWA icons are SVG which some older Android versions may not support as splash icons
+- No GitHub Actions CI/CD workflow file yet
+- Favorites use `configIndex` (positional), not `configId` — fragile if configs are reordered
+- The `template-info` section currently has unused CSS for `h2` (the h2 element was removed, only `p` description remains)
