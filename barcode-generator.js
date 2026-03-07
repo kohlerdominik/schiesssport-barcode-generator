@@ -589,7 +589,8 @@
 
     /* Action buttons */
     .barcode-actions {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       margin: 1rem 0;
     }
@@ -599,7 +600,7 @@
       align-items: center;
       justify-content: center;
       gap: 0.375rem;
-      padding: 0.625rem 1rem;
+      padding: 0.625rem;
       border-radius: var(--radius);
       font-size: 0.875rem;
       font-weight: 500;
@@ -608,7 +609,10 @@
       border: 1px solid var(--border);
       background: var(--card-bg);
       color: var(--text);
-      flex: 1;
+    }
+
+    .btn span {
+      display: none;
     }
 
     .btn:hover {
@@ -870,6 +874,14 @@
 
       .input-group {
         margin-bottom: 0;
+      }
+
+      .btn span {
+        display: inline;
+      }
+
+      .btn {
+        padding: 0.625rem 1rem;
       }
     }
   `;
