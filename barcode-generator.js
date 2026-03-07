@@ -1613,7 +1613,7 @@
       overlay.innerHTML = `
         <div class="dialog">
           <p>${this._escapeHtml(message)}</p>
-          <input type="text" class="prompt-input" value="${this._escapeAttr(defaultValue)}" />
+          <input type="text" class="prompt-input" value="${this._escapeAttr(defaultValue)}" autocomplete="off" name="favorite-title" />
           <div class="dialog-actions">
             <button class="dialog-btn cancel">${this._t('cancel')}</button>
             <button class="dialog-btn dialog-btn-primary confirm" style="background:var(--primary);color:#fff;border-color:var(--primary);">${this._t('ok')}</button>

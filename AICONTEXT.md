@@ -355,7 +355,7 @@ All phases 1–6 and most of phases 7–8 are complete. The app is a single-file
 **Files:**
 - `barcode-generator.js` — Self-contained Web Component with Shadow DOM. Contains all logic: i18n translations, barcode configs, checksum algorithms, pattern parser, fill logic, validation, rendering, favorites, export, share, and event handling. ~1500 lines.
 - `index.html` — Minimal host page with PWA tags, loads JsBarcode + the component, registers service worker.
-- `sw.js` — Cache-first service worker with versioned cache (`barcode-gen-v1`).
+- `sw.js` — Network-first service worker with versioned cache (`barcode-gen-v1`). Tries network first and updates cache on success; falls back to cache when offline.
 - `manifest.json` — PWA manifest with SVG icons.
 - `lib/JsBarcode.all.min.js` — JsBarcode v3.11.6, locally bundled.
 - `icons/icon-192.svg`, `icons/icon-512.svg` — SVG PWA icons (barcode motif).
@@ -374,7 +374,7 @@ All phases 1–6 and most of phases 7–8 are complete. The app is a single-file
 - Segment configs support a `label` property (localized object) for custom input field labels. Falls back to type name if omitted.
 - Option segments default to the first option value (no `default` property needed).
 - Favorites store `configIndex` (integer). If configs are reordered or removed, old favorites may point to wrong templates. Consider migrating to `configId` string in the future.
-- Action buttons (Favorite, Download, Copy, Share) all use the same `.btn` class with consistent styling — icon + text label, uniform sizing.
+- Action buttons (Favorite, Download, Copy, Share) use `.btn` class in a 4-column CSS grid. On mobile, only icons are shown (`.btn span { display: none }`); on tablet/desktop (768px+), text labels appear alongside icons.
 - `resolveSource()` iterates all parsed segments and matches them against the source pattern. It skips segments not in the source, so the source can reference a subset of the pattern (e.g., source `######` in pattern `D######CC` correctly picks up only the # segment).
 - The `mod97weighted` checksum algorithm only handles numeric source values. Make sure the `source` property in checksum segments only references segments that resolve to digits.
 
@@ -385,8 +385,8 @@ All phases 1–6 and most of phases 7–8 are complete. The app is a single-file
 
 **Things NOT yet done / known gaps:**
 - No automated tests
-- Service worker cache version (`barcode-gen-v1`) needs manual bumping on updates
 - No "last used config" restoration from localStorage (preference is saved but input values are not persisted across sessions unless saved as a favorite)
+- Browser language auto-detection is implemented (`navigator.languages` with fallback), but only `en` and `de` are available
 - Accessibility: basic ARIA attributes exist but no comprehensive a11y audit done
 - PWA icons are SVG which some older Android versions may not support as splash icons
 - No GitHub Actions CI/CD workflow file yet
