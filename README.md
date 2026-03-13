@@ -1,3 +1,15 @@
+> 🌐 **Web App / Application**
+> 
+> 🇩🇪 **Suchen Sie die App?** [Hier klicken, um den Schiesssport Barcode Generator zu nutzen](https://kohlerdominik.github.io/schiesssport-barcode-generator/)
+> 
+> 🇫🇷 **Vous cherchez l'application ?** [Cliquez ici pour utiliser le Schiesssport Barcode Generator](https://kohlerdominik.github.io/schiesssport-barcode-generator/)
+> 
+> 🇮🇹 **Cerchi l'applicazione?** [Clicca qui per usare il Schiesssport Barcode Generator](https://kohlerdominik.github.io/schiesssport-barcode-generator/)
+> 
+> 🇬🇧 **Looking for the app?** [Click here to use the Schiesssport Barcode Generator](https://kohlerdominik.github.io/schiesssport-barcode-generator/)
+
+---
+
 # Sport Shooting Barcode Generator
 
 A web-based barcode generator for sport shooting use cases — license numbers, membership cards, competition entries, and more. Generates CODE_128 barcodes with configurable patterns and automatic checksum calculation.
